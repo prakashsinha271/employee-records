@@ -68,13 +68,34 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
           ),
         ),
       )
-          : ListView(
+          : Column(
         children: [
-          if (_currentEmployees.isNotEmpty)
-            _buildEmployeeSection('Current employees', _currentEmployees),
-          if (_previousEmployees.isNotEmpty)
-            _buildEmployeeSection(
-                'Previous employees', _previousEmployees),
+          Expanded(
+            child: ListView(
+              children: [
+                if (_currentEmployees.isNotEmpty)
+                  _buildEmployeeSection('Current employees', _currentEmployees),
+                if (_previousEmployees.isNotEmpty)
+                  _buildEmployeeSection(
+                      'Previous employees', _previousEmployees),
+              ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: Container(
+              width: double.infinity, // Span the full width of the screen
+              color: Colors.grey, // Set the desired background color
+              padding: const EdgeInsets.all(16.0), // Adjust padding as needed
+              child: const Text(
+                "Swipe left to delete",
+                style: TextStyle(
+                  color: Colors.white, // Set text color
+                  fontSize: 16.0,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(

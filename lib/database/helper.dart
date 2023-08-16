@@ -84,4 +84,14 @@ class DatabaseHelper {
     return await db.insert('empTable', employee.toMap());
   }
 
+  Future<void> updateEmployee(Employee employee) async {
+    final db = await instance.database;
+    await db.update(
+      'employees',
+      employee.toMap(),
+      where: 'id = ?',
+      whereArgs: [employee.id],
+    );
+  }
+
 }

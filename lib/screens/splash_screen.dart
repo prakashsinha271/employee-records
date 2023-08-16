@@ -17,7 +17,7 @@ class SplashScreen extends StatelessWidget {
           child: BlocBuilder<SplashScreenBloc, bool>(
             builder: (context, shouldNavigate) {
               if (shouldNavigate) {
-                WidgetsBinding.instance!.addPostFrameCallback((_) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => const EmployeeListScreen()),
