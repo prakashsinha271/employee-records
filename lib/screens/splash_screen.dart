@@ -17,10 +17,12 @@ class SplashScreen extends StatelessWidget {
           child: BlocBuilder<SplashScreenBloc, bool>(
             builder: (context, shouldNavigate) {
               if (shouldNavigate) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const EmployeeListScreen()),
-                );
+                WidgetsBinding.instance!.addPostFrameCallback((_) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const EmployeeListScreen()),
+                  );
+                });
               }
 
               return Column(

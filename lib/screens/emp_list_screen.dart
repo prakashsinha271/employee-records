@@ -1,64 +1,98 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:employee_records/screens/add_emp_screen.dart';
 import 'package:employee_records/database/helper.dart';
 
-import '../bloc/employee_list_screen_bloc.dart';
 import '../model/employee.dart';
 
-class EmployeeListScreen extends StatelessWidget {
+class EmployeeListScreen extends StatefulWidget {
   const EmployeeListScreen({Key? key}) : super(key: key);
 
   @override
+  _EmployeeListScreenState createState() => _EmployeeListScreenState();
+}
+
+class _EmployeeListScreenState extends State<EmployeeListScreen> {
+  late DatabaseHelper _databaseHelper;
+  late List<Employee> _employees;
+  late List<Employee> _currentEmployees = [];
+  late List<Employee> _previousEmployees = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _databaseHelper = DatabaseHelper.instance;
+    _employees = [];
+    _initDatabaseAndFetchData();
+  }
+
+  Future<void> _initDatabaseAndFetchData() async {
+    final db = await _databaseHelper.database;
+
+    // Check if the table exists, if not, create it
+    if (!(await _databaseHelper.isTableExists('empTable'))) {
+      await _databaseHelper.onCreate(db, 1);
+    }
+
+    // Fetch employees from the database
+    _employees = await _databaseHelper.getAllEmployees();
+
+    final employees = await _databaseHelper.getAllEmployees();
+    _currentEmployees =
+        employees.where((employee) => employee.exitDate == 'No date').toList();
+    _previousEmployees =
+        employees.where((employee) => employee.exitDate != 'No date').toList();
+    setState(() {}); // Update the UI
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => EmployeeListBloc()..add(InitEmployeeListEvent()),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Employee List'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Employee List'),
+      ),
+      body: _employees.isEmpty
+          ? Center(
+        child: Padding(
+          padding: const EdgeInsets.all(
+              16.0), // Optional: Add padding around the image
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(
+                    8.0), // Optional: Add additional padding
+                child: Image.asset('assets/images/no_data_found.png'),
+              ),
+              const SizedBox(height: 16.0),
+            ],
+          ),
         ),
-        body: BlocBuilder<EmployeeListBloc, EmployeeListState>(
-          builder: (context, state) {
-            if (state is EmployeeListLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            } else if (state is EmployeeListLoaded) {
-              return ListView(
-                children: [
-                  if (state.currentEmployees.isNotEmpty)
-                    _buildEmployeeSection(
-                        'Current employees', state.currentEmployees, context),
-                  if (state.previousEmployees.isNotEmpty)
-                    _buildEmployeeSection(
-                        'Previous employees', state.previousEmployees, context),
-                ],
-              );
-            } else if (state is EmployeeListError) {
-              return Center(
-                child: Text(state.error),
-              );
-            }
-            return Container();
-          },
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const AddEmployeeScreen()),
-            ).then((_) {
-              // Reload employee list when returning from AddEmployeeScreen
-              context.read<EmployeeListBloc>().add(InitEmployeeListEvent());
-            });
-          },
-          child: const Icon(Icons.add),
-        ),
+      )
+          : ListView(
+        children: [
+          if (_currentEmployees.isNotEmpty)
+            _buildEmployeeSection('Current employees', _currentEmployees),
+          if (_previousEmployees.isNotEmpty)
+            _buildEmployeeSection(
+                'Previous employees', _previousEmployees),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddEmployeeScreen()),
+          ).then((_) {
+            // Reload employee list when returning from AddEmployeeScreen
+            _initDatabaseAndFetchData();
+          });
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
-  Widget _buildEmployeeSection(String header, List<Employee> employees, context) {
+
+  Widget _buildEmployeeSection(String header, List<Employee> employees) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -94,14 +128,15 @@ class EmployeeListScreen extends StatelessWidget {
               ),
               onDismissed: (direction) async {
                 final deletedEmployee = employees.removeAt(index);
-                await context.read<EmployeeListBloc>().deleteEmployee(deletedEmployee.id);
+                await _databaseHelper.deleteEmployee(deletedEmployee.id);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: const Text("Employee data has been deleted"),
                     action: SnackBarAction(
                       label: 'Undo',
                       onPressed: () async {
-                        await context.read<EmployeeListBloc>().undoDeleteEmployee(deletedEmployee);
+                        await _databaseHelper.undoDeleteEmployee(deletedEmployee);
+                        _initDatabaseAndFetchData();
                       },
                     ),
                   ),

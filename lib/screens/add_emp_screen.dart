@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:employee_records/widgets/exit_date_widget.dart';
 import 'package:employee_records/widgets/joining_date_widget.dart';
-import 'package:sqflite/sqflite.dart';
 import '../bloc/add_employee_screen_bloc.dart';
-import 'package:employee_records/database/helper.dart';
-import '../model/employee.dart';
 
-class AddEmployeeScreen extends StatefulWidget {
+class AddEmployeeScreen extends StatelessWidget {
   const AddEmployeeScreen({Key? key}) : super(key: key);
 
   @override
@@ -15,18 +12,9 @@ class AddEmployeeScreen extends StatefulWidget {
     return BlocProvider(
       create: (context) => AddEmployeeBloc(),
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Add Employee'),
-        ),
         body: AddEmployeeForm(),
       ),
     );
-  }
-
-  @override
-  State<StatefulWidget> createState() {
-    // TODO: implement createState
-    throw UnimplementedError();
   }
 }
 
@@ -166,8 +154,12 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
       final joiningDate = joiningDateController.text;
       final exitDate = exitDateController.text;
       final joinDateFinal = '${joiningDate.split(" ")[0]} ${joiningDate.split(" ")[1]}, ${joiningDate.split(" ")[2]}';
-      final exitDateFinal = exitDate != "No date" ? '${joiningDate.split(" ")[0]} ${joiningDate.split(" ")[1]}, ${joiningDate.split(" ")[2]}' : exitDate;
-      context.read<AddEmployeeBloc>().saveEmployee(name, role, joinDateFinal, exitDateFinal);
+      final exitDateFinal = exitDate != "No date" ? '${exitDate.split(" ")[0]} ${exitDate.split(" ")[1]}, ${exitDate.split(" ")[2]}' : exitDate;
+      print("Prakash Sir");
+      print("${name}, ${role}, ${joinDateFinal}, ${exitDateFinal}`");
+      context.read<AddEmployeeBloc>().add(
+        SaveEmployeeEvent(name, role, joinDateFinal, exitDateFinal),
+      );
       Navigator.pop(context);
     }
   }
