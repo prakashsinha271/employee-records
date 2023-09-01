@@ -6,7 +6,11 @@ Employee Records &amp; Management Applications
 - flutter version = ^3.0.5
 
 ## TODOs
+- Fix bugs
+- Update Records
+- Delete Records
 - Improve UI
+- User Login (Local/Firebase-Auth)
 - Cloud Storage Synchronization
 - Bloc for remaining screens
 - Data Backup
