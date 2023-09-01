@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:employee_records/widgets/exit_date_widget.dart';
 import 'package:employee_records/widgets/joining_date_widget.dart';
 import '../bloc/add_employee_screen_bloc.dart';
+import '../database/helper.dart';
 import '../model/employee.dart';
 
 class AddEmployeeScreen extends StatelessWidget {
@@ -15,7 +16,62 @@ class AddEmployeeScreen extends StatelessWidget {
       create: (context) => AddEmployeeBloc(),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(employee == null ? 'Add Employee' : 'Edit Employee'), // Change the title based on whether it's editing or adding
+          title: Text(employee == null ? 'Add Employee' : 'Edit Employee'),
+          actions: <Widget>[
+            employee == null
+                ? IconButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Help'),
+                            content: const Text(
+                                'Hello There, I am here to assist you'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: const Text('Ok'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.help_outline))
+                : IconButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Delete Employee'),
+                            content: Text(
+                                'Are you sure you want to delete ${employee!.name}?'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: const Text('Cancel'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                              TextButton(
+                                child: const Text('Delete'),
+                                onPressed: () async {
+                                  await DatabaseHelper.instance
+                                      .deleteEmployee(employee!.id);
+                                  Navigator.of(context).popUntil(ModalRoute.withName('/home'));
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.delete_outline_outlined))
+          ],
         ),
         body: AddEmployeeForm(employee: employee),
       ),
@@ -33,7 +89,6 @@ class AddEmployeeForm extends StatefulWidget {
 class _AddEmployeeFormState extends State<AddEmployeeForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-
   late TextEditingController nameController;
   late TextEditingController selectRoleController;
   late TextEditingController joiningDateController;
@@ -43,13 +98,13 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
   void initState() {
     super.initState();
     if (widget.employee != null) {
-      // If editing an employee, pre-fill the form fields with employee data
       nameController = TextEditingController(text: widget.employee!.name);
       selectRoleController = TextEditingController(text: widget.employee!.role);
-      joiningDateController = TextEditingController(text: widget.employee!.joiningDate);
-      exitDateController = TextEditingController(text: widget.employee!.exitDate);
+      joiningDateController =
+          TextEditingController(text: widget.employee!.joiningDate);
+      exitDateController =
+          TextEditingController(text: widget.employee!.exitDate);
     } else {
-      // If adding a new employee, initialize controllers as before
       nameController = TextEditingController(text: 'Employee Name');
       selectRoleController = TextEditingController(text: 'Select a Role');
       joiningDateController = TextEditingController(text: 'Today');
@@ -87,7 +142,7 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
                     child: ListView.separated(
                       itemCount: roles.length,
                       separatorBuilder: (context, index) =>
-                      const Divider(height: 1, color: Colors.grey),
+                          const Divider(height: 1, color: Colors.grey),
                       itemBuilder: (context, index) {
                         return ListTile(
                           title: Center(child: Text(roles[index])),
@@ -144,7 +199,7 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
               setState(() {
                 exitDateController.text = "No date";
               });
-              Navigator.pop(context); // Close the overlay
+              Navigator.pop(context);
             },
           ),
         );
@@ -153,14 +208,20 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
   }
 
   String? validateEmployeeName(String? value) {
-    if (value == null || value.isEmpty || value == "Employee Name" || value == "") {
+    if (value == null ||
+        value.isEmpty ||
+        value == "Employee Name" ||
+        value == "") {
       return 'Please enter a valid employee name';
     }
     return null;
   }
 
   String? validateSelectedRole(String? value) {
-    if (value == null || value.isEmpty || value == "" || value == "Select a Role") {
+    if (value == null ||
+        value.isEmpty ||
+        value == "" ||
+        value == "Select a Role") {
       return 'Please select a role';
     }
     return null;
@@ -181,16 +242,15 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
       final exitDate = exitDateController.text;
       final joinDateFinal =
           '${joiningDate.split(" ")[0]} ${joiningDate.split(" ")[1]}, ${joiningDate.split(" ")[2]}';
-      final exitDateFinal =
-      exitDate != "No date" ? '${exitDate.split(" ")[0]} ${exitDate.split(" ")[1]}, ${exitDate.split(" ")[2]}' : exitDate;
+      final exitDateFinal = exitDate != "No date"
+          ? '${exitDate.split(" ")[0]} ${exitDate.split(" ")[1]}, ${exitDate.split(" ")[2]}'
+          : exitDate;
 
       if (widget.employee == null) {
-        // If no employee is provided, it's a new employee addition
         context.read<AddEmployeeBloc>().add(
-          SaveEmployeeEvent(name, role, joinDateFinal, exitDateFinal),
-        );
+              SaveEmployeeEvent(name, role, joinDateFinal, exitDateFinal),
+            );
       } else {
-        // If an employee is provided, it's an employee update
         final updatedEmployee = Employee(
           id: widget.employee!.id,
           name: name,
@@ -199,8 +259,8 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
           exitDate: exitDateFinal,
         );
         context.read<AddEmployeeBloc>().add(
-          UpdateEmployeeEvent(updatedEmployee),
-        );
+              UpdateEmployeeEvent(updatedEmployee),
+            );
       }
 
       Navigator.pop(context);
@@ -229,10 +289,13 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  prefixIcon: const Icon(Icons.person_outline, color: Colors.blue),
+                  prefixIcon:
+                      const Icon(Icons.person_outline, color: Colors.blue),
                 ),
                 style: TextStyle(
-                  color: nameController.text == 'Employee Name' ? Colors.grey : Colors.black,
+                  color: nameController.text == 'Employee Name'
+                      ? Colors.grey
+                      : Colors.black,
                 ),
                 onTap: () {
                   if (nameController.text == 'Employee Name') {
@@ -253,11 +316,16 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  prefixIcon: const Icon(Icons.work_outline, color: Colors.blue),
-                  suffixIcon: const Icon(Icons.arrow_drop_down, color: Colors.blue),
+                  prefixIcon:
+                      const Icon(Icons.work_outline, color: Colors.blue),
+                  suffixIcon:
+                      const Icon(Icons.arrow_drop_down, color: Colors.blue),
                 ),
                 style: TextStyle(
-                  color: selectRoleController.text == 'Select a Role' || selectRoleController.text == '' ? Colors.grey : Colors.black,
+                  color: selectRoleController.text == 'Select a Role' ||
+                          selectRoleController.text == ''
+                      ? Colors.grey
+                      : Colors.black,
                 ),
                 readOnly: true,
                 onTap: () {
@@ -275,7 +343,7 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     SizedBox(
-                      width: 150, // Provide a finite width constraint here
+                      width: 150,
                       child: TextFormField(
                         controller: joiningDateController,
                         validator: validateJoiningDate,
@@ -283,33 +351,29 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          // labelText: 'Today',
                           labelStyle: TextStyle(
-                            color:
-                            joiningDateController.text.isEmpty ? Colors.grey : Colors.blue,
+                            color: joiningDateController.text.isEmpty
+                                ? Colors.grey
+                                : Colors.blue,
                           ),
-                          prefixIcon:
-                          const Icon(Icons.calendar_today, color: Colors.blue),
+                          prefixIcon: const Icon(Icons.calendar_today,
+                              color: Colors.blue),
                         ),
-                        readOnly: true, // Make the field read-only
+                        readOnly: true,
                         onTap: () {
-                          _openJoiningDateWidget(context); // Open the date picker
+                          _openJoiningDateWidget(context);
                         },
                       ),
                     ),
-                    const SizedBox(
-                        width:
-                        16), // Spacer between the first GestureDetector and the icon
+                    const SizedBox(width: 16),
                     const Icon(
                       Icons.arrow_forward,
                       color: Colors.blue,
                       size: 24,
                     ),
-                    const SizedBox(
-                        width:
-                        16), // Spacer between the icon and the second GestureDetector
+                    const SizedBox(width: 16),
                     SizedBox(
-                      width: 150, // Provide a finite width constraint here
+                      width: 150,
                       child: TextFormField(
                         controller: exitDateController,
                         decoration: InputDecoration(
@@ -317,15 +381,16 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           labelStyle: TextStyle(
-                            color:
-                            exitDateController.text == "No date" ? Colors.grey : Colors.blue,
+                            color: exitDateController.text == "No date"
+                                ? Colors.grey
+                                : Colors.blue,
                           ),
-                          prefixIcon:
-                          const Icon(Icons.calendar_today, color: Colors.blue),
+                          prefixIcon: const Icon(Icons.calendar_today,
+                              color: Colors.blue),
                         ),
-                        readOnly: true, // Make the field read-only
+                        readOnly: true,
                         onTap: () {
-                          _openExitDateWidget(context); // Open the date picker
+                          _openExitDateWidget(context);
                         },
                       ),
                     ),
@@ -359,7 +424,8 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
             height: 1,
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+            padding:
+                const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -368,8 +434,8 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    primary: const Color.fromRGBO(240, 255, 255, 1.0),
-                    onPrimary: Colors.blue, // Text color
+                    foregroundColor: Colors.blue,
+                    backgroundColor: const Color.fromRGBO(240, 255, 255, 1.0),
                   ),
                   child: const Text('Cancel'),
                 ),
@@ -378,7 +444,9 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
                   onPressed: () {
                     _handleSaveButtonTap();
                   },
-                  child: const Text('Save'),
+                  child: widget.employee == null
+                      ? const Text('Save')
+                      : const Text('Update'),
                 ),
               ],
             ),

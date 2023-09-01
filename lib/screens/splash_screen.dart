@@ -18,10 +18,7 @@ class SplashScreen extends StatelessWidget {
             builder: (context, shouldNavigate) {
               if (shouldNavigate) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const EmployeeListScreen()),
-                  );
+                  Navigator.of(context).pushReplacementNamed('/home');
                 });
               }
 

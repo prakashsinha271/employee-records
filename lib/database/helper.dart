@@ -39,7 +39,8 @@ class DatabaseHelper {
     ''');
   }
 
-  Future<void> insertData(String name, String role, String joiningDate, String? exitDate) async {
+  Future<void> insertData(
+      String name, String role, String joiningDate, String? exitDate) async {
     final db = await database;
     await db.insert(
       'empTable',
@@ -93,5 +94,4 @@ class DatabaseHelper {
       whereArgs: [employee.id],
     );
   }
-
 }

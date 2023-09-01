@@ -1,3 +1,5 @@
+import 'package:employee_records/screens/add_emp_screen.dart';
+import 'package:employee_records/screens/emp_list_screen.dart';
 import 'package:employee_records/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,14 +21,20 @@ class MyApp extends StatelessWidget {
     ]);
 
     return BlocProvider(
-      create: (context) => SplashScreenBloc(), // Create your SplashScreen BLoC
+      create: (context) => SplashScreenBloc(),
       child: MaterialApp(
         title: 'Employee Records',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: const SplashScreen(),
+        // home: const SplashScreen(),
         debugShowCheckedModeBanner: false,
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const SplashScreen(),
+          '/home': (context) => const EmployeeListScreen(),
+          '/add_edit_employee': (context) => const AddEmployeeScreen(),
+        },
       ),
     );
   }

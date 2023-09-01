@@ -144,7 +144,6 @@ class _ExitDateWidgetState extends State<ExitDateWidget> {
             },
             focusedDay: currentLocalDate,
             selectedDayPredicate: (day) {
-              // Return true if the day is the selected date
               if (selectedDate != "No date") {
                 return isSameDay(DateTime.parse(selectedDate), day);
               }
@@ -210,7 +209,7 @@ class _ExitDateWidgetState extends State<ExitDateWidget> {
                       },
                       style: ElevatedButton.styleFrom(
                         primary: const Color.fromRGBO(240, 255, 255, 1.0),
-                        onPrimary: Colors.blue, // Text color
+                        onPrimary: Colors.blue,
                       ),
                       child: const Text(
                         'Cancel',

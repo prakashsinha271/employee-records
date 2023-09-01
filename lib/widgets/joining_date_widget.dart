@@ -25,9 +25,7 @@ class _JoiningDateWidgetState extends State<JoiningDateWidget> {
   late DateTime tempDate;
 
   double calculateOverlayHeight(double tableCalendarHeight) {
-    // Calculate the total height by considering the height of the TableCalendar and other elements
-    double totalHeight =
-        tableCalendarHeight + 160.0; // Adjust this value as needed
+    double totalHeight = tableCalendarHeight + 160.0;
     return totalHeight;
   }
 
@@ -119,20 +117,17 @@ class _JoiningDateWidgetState extends State<JoiningDateWidget> {
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color:
-                            noDateButtonTapped ? Colors.blue : Colors.grey,
+                        color: noDateButtonTapped ? Colors.blue : Colors.grey,
                       ),
                       borderRadius: BorderRadius.circular(8),
-                      color:
-                          noDateButtonTapped ? Colors.blue : Colors.white,
+                      color: noDateButtonTapped ? Colors.blue : Colors.white,
                     ),
                     child: Center(
                       child: Text(
                         'Next Monday',
                         style: TextStyle(
-                            color: noDateButtonTapped
-                                ? Colors.white
-                                : Colors.blue,
+                            color:
+                                noDateButtonTapped ? Colors.white : Colors.blue,
                             fontSize: 12),
                       ),
                     ),
@@ -193,7 +188,7 @@ class _JoiningDateWidgetState extends State<JoiningDateWidget> {
                 child: GestureDetector(
                   onTap: () {
                     DateTime next7thDate = currentLocalDate;
-                      next7thDate = next7thDate.add(const Duration(days: 7));
+                    next7thDate = next7thDate.add(const Duration(days: 7));
                     _updateSelectedDate(
                         next7thDate.toLocal().toString().split(" ")[0]);
                     after1WeekButtonTapped = true;
@@ -240,13 +235,10 @@ class _JoiningDateWidgetState extends State<JoiningDateWidget> {
               todayButtonTapped = true;
               after1WeekButtonTapped = true;
               currentDateButtonTapped = true;
-              _updateSelectedDate(selectedDateOnCal
-                  .toString()
-                  .split(" ")[0]); // Call your _updateSelectedDate method
+              _updateSelectedDate(selectedDateOnCal.toString().split(" ")[0]);
             },
             focusedDay: DateTime.parse(selectedDate),
             selectedDayPredicate: (day) {
-              // Return true if the day is the selected date
               return isSameDay(DateTime.parse(selectedDate), day);
             },
             calendarStyle: CalendarStyle(
@@ -301,7 +293,7 @@ class _JoiningDateWidgetState extends State<JoiningDateWidget> {
                       },
                       style: ElevatedButton.styleFrom(
                         primary: const Color.fromRGBO(240, 255, 255, 1.0),
-                        onPrimary: Colors.blue, // Text color
+                        onPrimary: Colors.blue,
                       ),
                       child: const Text(
                         'Cancel',

@@ -16,6 +16,10 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
   late List<Employee> _employees;
   late List<Employee> _currentEmployees = [];
   late List<Employee> _previousEmployees = [];
+  late List<Employee> _filteredEmployees = [];
+  late List<Employee> _allEmployee = [];
+  bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -28,12 +32,10 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
   Future<void> _initDatabaseAndFetchData() async {
     final db = await _databaseHelper.database;
 
-    // Check if the table exists, if not, create it
     if (!(await _databaseHelper.isTableExists('empTable'))) {
       await _databaseHelper.onCreate(db, 1);
     }
 
-    // Fetch employees from the database
     _employees = await _databaseHelper.getAllEmployees();
 
     final employees = await _databaseHelper.getAllEmployees();
@@ -41,70 +43,141 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
         employees.where((employee) => employee.exitDate == 'No date').toList();
     _previousEmployees =
         employees.where((employee) => employee.exitDate != 'No date').toList();
-    setState(() {}); // Update the UI
+    _filteredEmployees = _employees;
+    _allEmployee = _employees;
+    setState(() {});
+  }
+
+  void _filterEmployees(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredEmployees = _employees;
+      } else {
+        _filteredEmployees = _employees.where((employee) {
+          final nameMatches =
+              employee.name.toLowerCase().contains(query.toLowerCase());
+          final roleMatches =
+              employee.role.toLowerCase().contains(query.toLowerCase());
+          return nameMatches || roleMatches;
+        }).toList();
+      }
+    });
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      _isSearching = !_isSearching;
+      if (!_isSearching) {
+        _searchController.clear();
+        _filterEmployees('');
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Employee List'),
-      ),
-      body: _employees.isEmpty
-          ? Center(
-        child: Padding(
-          padding: const EdgeInsets.all(
-              16.0), // Optional: Add padding around the image
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(
-                    8.0), // Optional: Add additional padding
-                child: Image.asset('assets/images/no_data_found.png'),
-              ),
-              const SizedBox(height: 16.0),
-            ],
-          ),
-        ),
-      )
-          : Column(
-        children: [
-          Expanded(
-            child: ListView(
-              children: [
-                if (_currentEmployees.isNotEmpty)
-                  _buildEmployeeSection('Current employees', _currentEmployees),
-                if (_previousEmployees.isNotEmpty)
-                  _buildEmployeeSection(
-                      'Previous employees', _previousEmployees),
-              ],
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomLeft,
-            child: Container(
-              width: double.infinity, // Span the full width of the screen
-              color: Colors.grey, // Set the desired background color
-              padding: const EdgeInsets.all(16.0), // Adjust padding as needed
-              child: const Text(
-                "Swipe left to delete",
-                style: TextStyle(
-                  color: Colors.white, // Set text color
-                  fontSize: 16.0,
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                onChanged: _filterEmployees,
+                decoration: const InputDecoration(
+                  hintText: 'Search employees',
+                  border: InputBorder.none,
                 ),
-              ),
-            ),
+              )
+            : const Text('Employee List'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(_isSearching ? Icons.close : Icons.search),
+            onPressed: _toggleSearch,
           ),
+          _isSearching
+              ? const Text("")
+              : PopupMenuButton<String>(
+                  onSelected: (value) {
+                    if (value == "sortByName") {
+                      // TODO Handle sort event by name
+                    } else if (value == "sortByRole") {
+                      // TODO Handle sort event by role
+                    }
+                  },
+                  itemBuilder: (BuildContext context) {
+                    return <PopupMenuEntry<String>>[
+                      const PopupMenuItem<String>(
+                        value: 'sortByName',
+                        child: Text('Sort by Name'),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'sortByRole',
+                        child: Text('Sort by Role'),
+                      ),
+                    ];
+                  },
+                ),
         ],
       ),
+      body: _allEmployee.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.asset('assets/images/no_data_found.png'),
+                    ),
+                    const SizedBox(height: 16.0),
+                  ],
+                ),
+              ),
+            )
+          : Column(
+              children: [
+                Expanded(
+                  child: ListView(
+                    children: _isSearching
+                        ? [
+                            _buildEmployeeSection(
+                                'Search Result', _filteredEmployees)
+                          ]
+                        : [
+                            if (_currentEmployees.isNotEmpty)
+                              _buildEmployeeSection(
+                                  'Current employees', _currentEmployees),
+                            if (_previousEmployees.isNotEmpty)
+                              _buildEmployeeSection(
+                                  'Previous employees', _previousEmployees),
+                          ],
+                  ),
+                ),
+                _allEmployee.isNotEmpty
+                    ? Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Container(
+                          width: double.infinity,
+                          color: Colors.grey,
+                          padding: const EdgeInsets.all(12.0),
+                          child: const Text(
+                            "Swipe left to delete & tap to edit employee",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16.0,
+                            ),
+                          ),
+                        ),
+                      )
+                    : const Text(""),
+              ],
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AddEmployeeScreen()),
           ).then((_) {
-            // Reload employee list when returning from AddEmployeeScreen
             _initDatabaseAndFetchData();
           });
         },
@@ -114,6 +187,10 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
   }
 
   Widget _buildEmployeeSection(String header, List<Employee> employees) {
+    if (employees.isEmpty) {
+      return Container();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -137,14 +214,12 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
             final employee = entry.value;
             return GestureDetector(
               onTap: () {
-                // 3. When a ListTile is tapped, navigate to the update employee screen:
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => AddEmployeeScreen(employee: employee),
                   ),
                 ).then((_) {
-                  // Reload employee list when returning from UpdateEmployeeScreen
                   _initDatabaseAndFetchData();
                 });
               },
@@ -169,13 +244,14 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                       action: SnackBarAction(
                         label: 'Undo',
                         onPressed: () async {
-                          // TODO
-                          // await _databaseHelper.undoDeleteEmployee(deletedEmployee);
-                          // _initDatabaseAndFetchData();
+                          await _databaseHelper
+                              .undoDeleteEmployee(deletedEmployee);
+                          _initDatabaseAndFetchData();
                         },
                       ),
                     ),
                   );
+                  setState(() {});
                 },
                 child: ListTile(
                   title: Text(employee.name),

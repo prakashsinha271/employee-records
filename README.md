@@ -10,12 +10,15 @@ Employee Records &amp; Management Applications
 - [Done] Read Record => HomeScreen
 - [Done] Create Record => AddEmployeeScreen
 - [Done] Update Records => AddEmployeeScreen
-- [Done] Delete Record => Swipe action on HomeScreen
-- [TODO] Undo Delete Records => SnackBar on HomeScreen
-- [TODO] Search Record => App Bar Icon Button on Home Screen
+- [Done] Delete Record => Swipe action on HomeScreen & Edit Employee Screen
+- [Done] Undo Delete Records => SnackBar on HomeScreen
+- [Done] Search Record => App Bar Icon Button on Home Screen
+- [TODO] Sort Record => App Bar Icon Button on Home Screen
 - [InProgress] Fix bugs
 - [TODO] Improve UI & Screen Layouts
-- [TODO] Cloud Storage Synchronization
+- [TODO] Cloud Storage
+- [TODO] Data Backup
 - [InProgress] Bloc Implementation
 - [TODO] Data Backup
 - [InProgress] MVVM
+- [TODO] Unit Testing

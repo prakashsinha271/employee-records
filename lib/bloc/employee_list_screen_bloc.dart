@@ -41,10 +41,12 @@ class EmployeeListBloc extends Bloc<EmployeeListEvent, EmployeeListState> {
   Stream<EmployeeListState> _mapInitEmployeeListEventToState() async* {
     try {
       final employees = await _databaseHelper.getAllEmployees();
-      final currentEmployees =
-      employees.where((employee) => employee.exitDate == 'No date').toList();
-      final previousEmployees =
-      employees.where((employee) => employee.exitDate != 'No date').toList();
+      final currentEmployees = employees
+          .where((employee) => employee.exitDate == 'No date')
+          .toList();
+      final previousEmployees = employees
+          .where((employee) => employee.exitDate != 'No date')
+          .toList();
 
       yield EmployeeListLoaded(currentEmployees, previousEmployees);
     } catch (e) {

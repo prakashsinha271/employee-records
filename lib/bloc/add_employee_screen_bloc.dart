@@ -48,32 +48,25 @@ class AddEmployeeBloc extends Bloc<AddEmployeeEvent, AddEmployeeState> {
     }
   }
 
-  Stream<AddEmployeeState> _mapSaveEmployeeEventToState(SaveEmployeeEvent event) async* {
+  Stream<AddEmployeeState> _mapSaveEmployeeEventToState(
+      SaveEmployeeEvent event) async* {
     try {
-      await _databaseHelper.insertData(event.name, event.role, event.joiningDate, event.exitDate);
-
-      // Simulate a delay to emulate asynchronous behavior
-      await Future.delayed(Duration(seconds: 2));
-
-      // After saving successfully, emit a state indicating success
+      await _databaseHelper.insertData(
+          event.name, event.role, event.joiningDate, event.exitDate);
+      await Future.delayed(const Duration(seconds: 2));
       yield EmployeeSavedSuccess();
     } catch (e) {
-      // In case of an error, emit a state indicating failure
       yield EmployeeSavedError('Failed to save employee data');
     }
   }
 
-  Stream<AddEmployeeState> _mapUpdateEmployeeEventToState(UpdateEmployeeEvent event) async* {
+  Stream<AddEmployeeState> _mapUpdateEmployeeEventToState(
+      UpdateEmployeeEvent event) async* {
     try {
-      await _databaseHelper.updateEmployee(event.updatedEmployee); // updateEmployee
-
-      // Simulate a delay to emulate asynchronous behavior
-      await Future.delayed(Duration(seconds: 2));
-
-      // After updating successfully, emit a state indicating success
+      await _databaseHelper.updateEmployee(event.updatedEmployee);
+      await Future.delayed(const Duration(seconds: 2));
       yield EmployeeSavedSuccess();
     } catch (e) {
-
       yield EmployeeSavedError('Failed to update employee data');
     }
   }
