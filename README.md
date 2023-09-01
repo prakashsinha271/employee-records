@@ -5,13 +5,17 @@ Employee Records &amp; Management Applications
 
 - flutter version = ^3.0.5
 
-## TODOs
-- Fix bugs
-- Update Records
-- Delete Records
-- Improve UI
-- User Login (Local/Firebase-Auth)
-- Cloud Storage Synchronization
-- Bloc for remaining screens
-- Data Backup
-- MVVM
+## Features
+- [TODO] User Login (Local/Firebase-Auth)
+- [Done] Read Record => HomeScreen
+- [Done] Create Record => AddEmployeeScreen
+- [Done] Update Records => AddEmployeeScreen
+- [Done] Delete Record => Swipe action on HomeScreen
+- [TODO] Undo Delete Records => SnackBar on HomeScreen
+- [TODO] Search Record => App Bar Icon Button on Home Screen
+- [InProgress] Fix bugs
+- [TODO] Improve UI & Screen Layouts
+- [TODO] Cloud Storage Synchronization
+- [InProgress] Bloc Implementation
+- [TODO] Data Backup
+- [InProgress] MVVM
