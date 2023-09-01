@@ -3,22 +3,29 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:employee_records/widgets/exit_date_widget.dart';
 import 'package:employee_records/widgets/joining_date_widget.dart';
 import '../bloc/add_employee_screen_bloc.dart';
+import '../model/employee.dart';
 
 class AddEmployeeScreen extends StatelessWidget {
-  const AddEmployeeScreen({Key? key}) : super(key: key);
+  final Employee? employee;
+  const AddEmployeeScreen({Key? key, this.employee}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => AddEmployeeBloc(),
       child: Scaffold(
-        body: AddEmployeeForm(),
+        appBar: AppBar(
+          title: Text(employee == null ? 'Add Employee' : 'Edit Employee'), // Change the title based on whether it's editing or adding
+        ),
+        body: AddEmployeeForm(employee: employee),
       ),
     );
   }
 }
 
 class AddEmployeeForm extends StatefulWidget {
+  final Employee? employee;
+  AddEmployeeForm({Key? key, this.employee}) : super(key: key);
   @override
   _AddEmployeeFormState createState() => _AddEmployeeFormState();
 }
@@ -26,10 +33,29 @@ class AddEmployeeForm extends StatefulWidget {
 class _AddEmployeeFormState extends State<AddEmployeeForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  TextEditingController nameController = TextEditingController(text: 'Employee Name');
-  TextEditingController selectRoleController = TextEditingController(text: 'Select a Role');
-  TextEditingController joiningDateController = TextEditingController(text: 'Today');
-  TextEditingController exitDateController = TextEditingController(text: 'No date');
+
+  late TextEditingController nameController;
+  late TextEditingController selectRoleController;
+  late TextEditingController joiningDateController;
+  late TextEditingController exitDateController;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.employee != null) {
+      // If editing an employee, pre-fill the form fields with employee data
+      nameController = TextEditingController(text: widget.employee!.name);
+      selectRoleController = TextEditingController(text: widget.employee!.role);
+      joiningDateController = TextEditingController(text: widget.employee!.joiningDate);
+      exitDateController = TextEditingController(text: widget.employee!.exitDate);
+    } else {
+      // If adding a new employee, initialize controllers as before
+      nameController = TextEditingController(text: 'Employee Name');
+      selectRoleController = TextEditingController(text: 'Select a Role');
+      joiningDateController = TextEditingController(text: 'Today');
+      exitDateController = TextEditingController(text: 'No date');
+    }
+  }
 
   List<String> roles = [
     'Product Designer',
@@ -153,13 +179,30 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
       final role = selectRoleController.text;
       final joiningDate = joiningDateController.text;
       final exitDate = exitDateController.text;
-      final joinDateFinal = '${joiningDate.split(" ")[0]} ${joiningDate.split(" ")[1]}, ${joiningDate.split(" ")[2]}';
-      final exitDateFinal = exitDate != "No date" ? '${exitDate.split(" ")[0]} ${exitDate.split(" ")[1]}, ${exitDate.split(" ")[2]}' : exitDate;
-      print("Prakash Sir");
-      print("${name}, ${role}, ${joinDateFinal}, ${exitDateFinal}`");
-      context.read<AddEmployeeBloc>().add(
-        SaveEmployeeEvent(name, role, joinDateFinal, exitDateFinal),
-      );
+      final joinDateFinal =
+          '${joiningDate.split(" ")[0]} ${joiningDate.split(" ")[1]}, ${joiningDate.split(" ")[2]}';
+      final exitDateFinal =
+      exitDate != "No date" ? '${exitDate.split(" ")[0]} ${exitDate.split(" ")[1]}, ${exitDate.split(" ")[2]}' : exitDate;
+
+      if (widget.employee == null) {
+        // If no employee is provided, it's a new employee addition
+        context.read<AddEmployeeBloc>().add(
+          SaveEmployeeEvent(name, role, joinDateFinal, exitDateFinal),
+        );
+      } else {
+        // If an employee is provided, it's an employee update
+        final updatedEmployee = Employee(
+          id: widget.employee!.id,
+          name: name,
+          role: role,
+          joiningDate: joinDateFinal,
+          exitDate: exitDateFinal,
+        );
+        context.read<AddEmployeeBloc>().add(
+          UpdateEmployeeEvent(updatedEmployee),
+        );
+      }
+
       Navigator.pop(context);
     }
   }
@@ -173,9 +216,6 @@ class _AddEmployeeFormState extends State<AddEmployeeForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Employee'),
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(

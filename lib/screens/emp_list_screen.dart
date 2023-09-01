@@ -135,44 +135,59 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
           children: employees.asMap().entries.map((entry) {
             final index = entry.key;
             final employee = entry.value;
-            return Dismissible(
-              key: Key(employee.id.toString()),
-              direction: DismissDirection.endToStart,
-              background: Container(
-                color: Colors.red,
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: const Icon(
-                  Icons.delete,
-                  color: Colors.white,
-                ),
-              ),
-              onDismissed: (direction) async {
-                final deletedEmployee = employees.removeAt(index);
-                await _databaseHelper.deleteEmployee(deletedEmployee.id);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text("Employee data has been deleted"),
-                    action: SnackBarAction(
-                      label: 'Undo',
-                      onPressed: () async {
-                        await _databaseHelper.undoDeleteEmployee(deletedEmployee);
-                        _initDatabaseAndFetchData();
-                      },
-                    ),
+            return GestureDetector(
+              onTap: () {
+                // 3. When a ListTile is tapped, navigate to the update employee screen:
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddEmployeeScreen(employee: employee),
                   ),
-                );
+                ).then((_) {
+                  // Reload employee list when returning from UpdateEmployeeScreen
+                  _initDatabaseAndFetchData();
+                });
               },
-              child: ListTile(
-                title: Text(employee.name),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(employee.role),
-                    Text(
-                      '${employee.exitDate == "No date" ? "From" : ""} ${employee.joiningDate} ${employee.exitDate != "No date" ? "- ${employee.exitDate}" : ""}',
+              child: Dismissible(
+                key: Key(employee.id.toString()),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  color: Colors.red,
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: const Icon(
+                    Icons.delete,
+                    color: Colors.white,
+                  ),
+                ),
+                onDismissed: (direction) async {
+                  final deletedEmployee = employees.removeAt(index);
+                  await _databaseHelper.deleteEmployee(deletedEmployee.id);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text("Employee data has been deleted"),
+                      action: SnackBarAction(
+                        label: 'Undo',
+                        onPressed: () async {
+                          // TODO
+                          // await _databaseHelper.undoDeleteEmployee(deletedEmployee);
+                          // _initDatabaseAndFetchData();
+                        },
+                      ),
                     ),
-                  ],
+                  );
+                },
+                child: ListTile(
+                  title: Text(employee.name),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(employee.role),
+                      Text(
+                        '${employee.exitDate == "No date" ? "From" : ""} ${employee.joiningDate} ${employee.exitDate != "No date" ? "- ${employee.exitDate}" : ""}',
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );

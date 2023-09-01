@@ -2,7 +2,6 @@ import 'package:employee_records/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'bloc/splash_screen_bloc.dart';
 
 void main() {

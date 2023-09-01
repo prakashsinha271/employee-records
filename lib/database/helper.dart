@@ -87,7 +87,7 @@ class DatabaseHelper {
   Future<void> updateEmployee(Employee employee) async {
     final db = await instance.database;
     await db.update(
-      'employees',
+      'empTable',
       employee.toMap(),
       where: 'id = ?',
       whereArgs: [employee.id],
